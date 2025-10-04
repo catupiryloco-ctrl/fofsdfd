@@ -45,13 +45,13 @@ startBtn.addEventListener('click', async () => {
   const width = 1920;
   const height = 1080;
 
-  // Canvas para desenhar
+  // Canvas para desenhar, com willReadFrequently para performance
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
-  const frames = [];
+  const encoder = new Whammy.Video(fps);
 
   for (let i = 0; i <= totalFrames; i++) {
     const progress = i / totalFrames;
@@ -68,17 +68,15 @@ startBtn.addEventListener('click', async () => {
     ctx.textBaseline = 'middle';
     ctx.fillText(current, width/2, height/2);
 
-    // Adiciona frame ao Whammy
-    frames.push(ctx.getImageData(0, 0, width, height));
+    // Adiciona frame ao encoder
+    encoder.add(ctx);
+    
+    // Atualiza a tela durante a geração
+    numberDiv.textContent = current;
+    await new Promise(r => setTimeout(r, 1000/fps));
   }
 
-  // Gera WebM
-  const encoder = new Whammy.Video(fps);
-  for (let i = 0; i < frames.length; i++) {
-    // converte canvas frame para imagem
-    ctx.putImageData(frames[i], 0, 0);
-    encoder.add(ctx);
-  }
+  // Compila vídeo
   const output = encoder.compile();
   const url = URL.createObjectURL(output);
 
