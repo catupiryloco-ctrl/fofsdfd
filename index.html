@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Contagem 0 → 2024</title>
+<title>Contagem 0 → 2024 Full HD</title>
 <style>
   body {
     background: black;
@@ -14,10 +14,6 @@
     justify-content: center;
     height: 100vh;
   }
-  #number {
-    font-size: 120px;
-    font-weight: bold;
-  }
   button {
     margin-top: 20px;
     padding: 10px 20px;
@@ -28,54 +24,48 @@
 </head>
 <body>
 
-<div id="number">0</div>
-<button id="startBtn">Gerar e Baixar Vídeo</button>
+<button id="startBtn">Gerar e Baixar Vídeo Full HD</button>
 
 <script>
-const numberDiv = document.getElementById('number');
 const startBtn = document.getElementById('startBtn');
 
 startBtn.addEventListener('click', async () => {
   startBtn.disabled = true;
 
-  const width = 3840;
-  const height = 2160;
-  const fps = 60;
+  const width = 1920;
+  const height = 1080;
+  const fps = 30;
   const finalNumber = 2024;
 
-  // Canvas
+  // Canvas em resolução Full HD
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  document.body.appendChild(canvas); // opcional: mostrar no corpo
+  document.body.appendChild(canvas); // opcional, apenas pra ver a animação
 
-  // MediaRecorder
+  // MediaRecorder para gerar vídeo
   const stream = canvas.captureStream(fps);
   const recordedChunks = [];
   const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
   recorder.ondataavailable = e => { if(e.data.size > 0) recordedChunks.push(e.data); };
   recorder.start();
 
-  // Contagem frame a frame até 2024
   for (let current = 0; current <= finalNumber; current++) {
     // Fundo preto
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, width, height);
 
-    // Número branco
+    // Número branco grande
     ctx.fillStyle = 'white';
-    ctx.font = 'bold 200px Arial';
+    ctx.font = 'bold 400px Arial'; // texto grande pra Full HD
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(current, width/2, height/2);
 
-    numberDiv.textContent = current;
-
-    await new Promise(r => setTimeout(r, 1000/fps)); // controla velocidade
+    await new Promise(r => setTimeout(r, 1000/fps));
   }
 
-  // Finaliza gravação
   recorder.stop();
 
   recorder.onstop = () => {
@@ -84,7 +74,7 @@ startBtn.addEventListener('click', async () => {
 
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'contagem_0_2024.webm';
+    a.download = 'contagem_0_2024_FullHD.webm';
     a.click();
 
     startBtn.disabled = false;
