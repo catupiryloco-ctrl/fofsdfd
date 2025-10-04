@@ -31,7 +31,6 @@
 <div id="number">0</div>
 <button id="startBtn">Gerar e Baixar Vídeo</button>
 
-<script src="https://cdn.jsdelivr.net/npm/whammy@0.0.3/whammy.js"></script>
 <script>
 const numberDiv = document.getElementById('number');
 const startBtn = document.getElementById('startBtn');
@@ -39,19 +38,25 @@ const startBtn = document.getElementById('startBtn');
 startBtn.addEventListener('click', async () => {
   startBtn.disabled = true;
 
+  const width = 1920;
+  const height = 1080;
   const duration = 3; // segundos
   const fps = 30;
   const totalFrames = duration * fps;
-  const width = 1920;
-  const height = 1080;
 
-  // Canvas para desenhar, com willReadFrequently para performance
+  // Canvas
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  document.body.appendChild(canvas); // opcional: mostrar no corpo
 
-  const encoder = new Whammy.Video(fps);
+  // MediaRecorder
+  const stream = canvas.captureStream(fps);
+  const recordedChunks = [];
+  const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+  recorder.ondataavailable = e => { if(e.data.size > 0) recordedChunks.push(e.data); };
+  recorder.start();
 
   for (let i = 0; i <= totalFrames; i++) {
     const progress = i / totalFrames;
@@ -68,25 +73,24 @@ startBtn.addEventListener('click', async () => {
     ctx.textBaseline = 'middle';
     ctx.fillText(current, width/2, height/2);
 
-    // Adiciona frame ao encoder
-    encoder.add(ctx);
-    
-    // Atualiza a tela durante a geração
     numberDiv.textContent = current;
     await new Promise(r => setTimeout(r, 1000/fps));
   }
 
-  // Compila vídeo
-  const output = encoder.compile();
-  const url = URL.createObjectURL(output);
+  recorder.stop();
 
-  // Cria link de download
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'contagem_0_2024.webm';
-  a.click();
+  recorder.onstop = () => {
+    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+    const url = URL.createObjectURL(blob);
 
-  startBtn.disabled = false;
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'contagem_0_2024.webm';
+    a.click();
+
+    startBtn.disabled = false;
+    canvas.remove();
+  };
 });
 </script>
 
