@@ -29,57 +29,66 @@
 <body>
 
 <div id="number">0</div>
-<button id="startBtn">Gerar e Baixar MP4</button>
+<button id="startBtn">Gerar e Baixar Vídeo</button>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ccapture.js/1.1.0/CCapture.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/whammy@0.0.3/whammy.js"></script>
 <script>
 const numberDiv = document.getElementById('number');
 const startBtn = document.getElementById('startBtn');
 
 startBtn.addEventListener('click', async () => {
-    startBtn.disabled = true;
+  startBtn.disabled = true;
 
-    const duration = 3; // segundos
-    const fps = 30;
-    const totalFrames = duration * fps;
+  const duration = 3; // segundos
+  const fps = 30;
+  const totalFrames = duration * fps;
+  const width = 1920;
+  const height = 1080;
 
-    let current = 0;
-    const capturer = new CCapture({
-        format: 'webm', // MP4 não suportado direto no browser, mas webm funciona
-        framerate: fps
-    });
+  // Canvas para desenhar
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
 
-    // cria um canvas para capturar
-    const canvas = document.createElement('canvas');
-    canvas.width = 1920;
-    canvas.height = 1080;
-    const ctx = canvas.getContext('2d');
+  const frames = [];
 
-    capturer.start();
+  for (let i = 0; i <= totalFrames; i++) {
+    const progress = i / totalFrames;
+    const current = Math.floor(progress * 2024);
 
-    for (let i = 0; i <= totalFrames; i++) {
-        const progress = i / totalFrames;
-        current = Math.floor(progress * 2024);
+    // Fundo preto
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, width, height);
 
-        // desenha fundo
-        ctx.fillStyle = 'black';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Número branco
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 200px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(current, width/2, height/2);
 
-        // desenha número
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 200px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(current, canvas.width/2, canvas.height/2);
+    // Adiciona frame ao Whammy
+    frames.push(ctx.getImageData(0, 0, width, height));
+  }
 
-        capturer.capture(canvas);
+  // Gera WebM
+  const encoder = new Whammy.Video(fps);
+  for (let i = 0; i < frames.length; i++) {
+    // converte canvas frame para imagem
+    ctx.putImageData(frames[i], 0, 0);
+    encoder.add(ctx);
+  }
+  const output = encoder.compile();
+  const url = URL.createObjectURL(output);
 
-        await new Promise(r => setTimeout(r, 1000/fps));
-    }
+  // Cria link de download
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'contagem_0_2024.webm';
+  a.click();
 
-    capturer.stop();
-    capturer.save();
-    startBtn.disabled = false;
+  startBtn.disabled = false;
 });
 </script>
 
