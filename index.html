@@ -36,21 +36,23 @@ startBtn.addEventListener('click', async () => {
   const height = 1080;
   const fps = 30;
   const finalNumber = 2024;
+  const holdSeconds = 3; // tempo para manter o número final
 
-  // Canvas em resolução Full HD
+  // Canvas em Full HD
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  document.body.appendChild(canvas); // opcional, apenas pra ver a animação
+  document.body.appendChild(canvas); // opcional: ver animação
 
-  // MediaRecorder para gerar vídeo
+  // MediaRecorder
   const stream = canvas.captureStream(fps);
   const recordedChunks = [];
   const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
   recorder.ondataavailable = e => { if(e.data.size > 0) recordedChunks.push(e.data); };
   recorder.start();
 
+  // Contagem do 0 até 2024
   for (let current = 0; current <= finalNumber; current++) {
     // Fundo preto
     ctx.fillStyle = 'black';
@@ -58,7 +60,7 @@ startBtn.addEventListener('click', async () => {
 
     // Número branco grande
     ctx.fillStyle = 'white';
-    ctx.font = 'bold 400px Arial'; // texto grande pra Full HD
+    ctx.font = 'bold 400px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(current, width/2, height/2);
@@ -66,6 +68,22 @@ startBtn.addEventListener('click', async () => {
     await new Promise(r => setTimeout(r, 1000/fps));
   }
 
+  // Mantém o 2024 por holdSeconds segundos
+  const holdFrames = holdSeconds * fps;
+  for (let i = 0; i < holdFrames; i++) {
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 400px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(finalNumber, width/2, height/2);
+
+    await new Promise(r => setTimeout(r, 1000/fps));
+  }
+
+  // Finaliza gravação
   recorder.stop();
 
   recorder.onstop = () => {
