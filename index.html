@@ -38,11 +38,10 @@ const startBtn = document.getElementById('startBtn');
 startBtn.addEventListener('click', async () => {
   startBtn.disabled = true;
 
-  const width = 1920;
-  const height = 1080;
-  const duration = 3; // segundos
-  const fps = 30;
-  const totalFrames = duration * fps;
+  const width = 3840;
+  const height = 2160;
+  const fps = 60;
+  const finalNumber = 2024;
 
   // Canvas
   const canvas = document.createElement('canvas');
@@ -58,10 +57,8 @@ startBtn.addEventListener('click', async () => {
   recorder.ondataavailable = e => { if(e.data.size > 0) recordedChunks.push(e.data); };
   recorder.start();
 
-  for (let i = 0; i <= totalFrames; i++) {
-    const progress = i / totalFrames;
-    const current = Math.floor(progress * 2024);
-
+  // Contagem frame a frame até 2024
+  for (let current = 0; current <= finalNumber; current++) {
     // Fundo preto
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, width, height);
@@ -74,9 +71,11 @@ startBtn.addEventListener('click', async () => {
     ctx.fillText(current, width/2, height/2);
 
     numberDiv.textContent = current;
-    await new Promise(r => setTimeout(r, 1000/fps));
+
+    await new Promise(r => setTimeout(r, 1000/fps)); // controla velocidade
   }
 
+  // Finaliza gravação
   recorder.stop();
 
   recorder.onstop = () => {
