@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Contagem 0 → 2024</title>
+<style>
+  body {
+    background: black;
+    color: white;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+  #number {
+    font-size: 120px;
+    font-weight: bold;
+  }
+  button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 18px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<div id="number">0</div>
+<button id="startBtn">Gerar e Baixar MP4</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ccapture.js/1.1.0/CCapture.all.min.js"></script>
+<script>
+const numberDiv = document.getElementById('number');
+const startBtn = document.getElementById('startBtn');
+
+startBtn.addEventListener('click', async () => {
+    startBtn.disabled = true;
+
+    const duration = 3; // segundos
+    const fps = 30;
+    const totalFrames = duration * fps;
+
+    let current = 0;
+    const capturer = new CCapture({
+        format: 'webm', // MP4 não suportado direto no browser, mas webm funciona
+        framerate: fps
+    });
+
+    // cria um canvas para capturar
+    const canvas = document.createElement('canvas');
+    canvas.width = 1920;
+    canvas.height = 1080;
+    const ctx = canvas.getContext('2d');
+
+    capturer.start();
+
+    for (let i = 0; i <= totalFrames; i++) {
+        const progress = i / totalFrames;
+        current = Math.floor(progress * 2024);
+
+        // desenha fundo
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // desenha número
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 200px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(current, canvas.width/2, canvas.height/2);
+
+        capturer.capture(canvas);
+
+        await new Promise(r => setTimeout(r, 1000/fps));
+    }
+
+    capturer.stop();
+    capturer.save();
+    startBtn.disabled = false;
+});
+</script>
+
+</body>
+</html>
